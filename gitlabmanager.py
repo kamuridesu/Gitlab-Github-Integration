@@ -53,6 +53,23 @@ class GitlabManager:
 				break
 		return False
 
+	def run_sync(self, user_repos: list) -> bool:
+		user_repos.append({"name": "YeyApp"})
+		repos: list = self.get_user_repos()
+		repo_names: list = []
+		for repo in repos:
+			repo_names.append({repo['name']: repo['ssh_url_to_repo']})
+
+		for repo in user_repos:
+			if repo['name'] not in [list(x.keys())[0] for x in repo_names]:
+				print(f"Creating repo {repo['name']}")
+				created = self.create_repo(repo['name'])
+				if created:
+					print(f"Syncing repo {repo['name']}")
+					helpers.run_bash_to_sync_commits(created['ssh_url'], repo['ssh_url'], True, False)
+					break
+				# repo_names.append(repo['name'])
+
 
 # glabMan = GitlabManager("tokens.json", 9218219)
 # print(glabMan.delete_repo("test_integration"))

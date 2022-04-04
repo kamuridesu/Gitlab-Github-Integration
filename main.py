@@ -8,19 +8,14 @@ class Sync:
         self.github_username = github_username
         self.gitlab_manager = GitlabManager(config_file, gitlab_id)
         self.github_manager = GithubManager(config_file, github_username)
-    
-    def sync_repos(self) -> None:
-        gitlab_repos = self.gitlab_manager.get_user_repos()
-        github_repos = self.github_manager.get_user_repos()
-        for gitlab_repo in gitlab_repos:
-            if gitlab_repo['name'] not in github_repos:
-                self.github_manager.create_repo(gitlab_repo['name'])
-        for github_repo in github_repos:
-            if github_repo['name'] not in gitlab_repos:
-                self.gitlab_manager.create_repo(github_repo['name'])
-        for gitlab_repo in gitlab_repos:
-            if gitlab_repo['name'] in github_repos:
-                self.gitlab_manager.delete_repo(gitlab_repo['name'])
-        for github_repo in github_repos:
-            if github_repo['name'] in gitlab_repos:
-                self.github_manager.delete_repo(github_repo['name'])
+
+    def run_sync(self, lab: bool = False, hub: bool = False) -> None:
+        if lab:
+            self.gitlab_manager.run_sync(self.github_manager.get_user_repos())
+        if hub:
+            self.github_manager.run_sync(self.gitlab_manager.get_user_repos())
+
+
+if __name__ == "__main__":
+    sync = Sync("tokens.json", "9218219", "kamuridesu")
+    sync.run_sync(lab=True, hub=False)
